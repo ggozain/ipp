@@ -4,45 +4,6 @@ data "aws_partition" "current" {}
 
 data "aws_region" "current" {}
 
-data "aws_vpc" "this" {
-
-  for_each = {
-    for function in local.lambda_functions : "${local.current_region}.${function.name}" => function
-    if function.vpc_name != null
-  }
-
-  filter {
-    name   = "tag:Name"
-    values = [each.value.vpc_name]
-  }
-}
-
-
-data "aws_subnets" "private" {
-
-  for_each = {
-    for function in local.lambda_functions : "${local.current_region}.${function.name}" => function
-    if function.vpc_name != null
-  }
-
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.this["${local.current_region}.${each.value.name}"].id]
-  }
-
-  tags = {
-    SubnetType = "private"
-  }
-
-  lifecycle {
-    postcondition {
-      condition     = length(self.ids) > 0
-      error_message = "No subnets tagged SubnetType = private were found in VPC '${each.value.vpc_name}'. A VPC-attached Lambda function needs at least one private subnet."
-    }
-  }
-}
-
-
 # Execution role policy: SQS consume on source queue.
 # DLQ redrive is performed by SQS itself (driven by the redrive policy on the source queue),
 # not by the Lambda execution role, so no SendMessage statement is needed here.

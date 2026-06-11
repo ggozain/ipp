@@ -19,10 +19,6 @@ lambda_functions = {
     # without notifications (still visible in the console).
     alarm_sns_topic_arn = "arn:aws:sns:eu-central-1:111122223333:ipp-alerts"
 
-    # VPC attachment is driven by vpc_name. The module discovers the VPC by
-    # tag:Name and attaches to the subnets tagged SubnetType = private within it.
-    vpc_name = "ipp-prod-vpc"
-
     iam_additional_policy_statements = [
       {
         sid    = "ReadDownstreamSecrets"

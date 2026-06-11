@@ -27,6 +27,6 @@ variable "tag_cost_center" {
 # functions
 variable "lambda_functions" {
   type        = any
-  description = "A map of Lambda functions to create. Each entry creates a Lambda (container image), a source SQS queue with an event source mapping, a redrive DLQ, a CloudWatch log group with an ERROR-line metric filter, three CloudWatch alarms (log errors, Lambda invocation errors, DLQ depth), an execution role, and an optional VPC attachment with an egress-443 security group. See readme.md for the full per-function schema and defaults."
+  description = "A map of Lambda functions to create. Each entry creates a Lambda (container image), a source SQS queue with an event source mapping, a redrive DLQ, a CloudWatch log group with an ERROR-line metric filter, three CloudWatch alarms (log errors, Lambda invocation errors, DLQ depth), and an execution role. See readme.md for the full per-function schema and defaults."
   default     = {}
 }

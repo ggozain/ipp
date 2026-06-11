@@ -21,11 +21,6 @@ module "lambda_function" {
   reserved_concurrent_executions = each.value.reserved_concurrency != null ? each.value.reserved_concurrency : -1
   environment_variables          = each.value.environment_variables
 
-  vpc_config = each.value.vpc_name != null ? {
-    subnet_ids         = data.aws_subnets.private["${local.current_region}.${each.value.name}"].ids
-    security_group_ids = [module.security_group_egress_https[each.key].security_group_id]
-  } : null
-
   log_group_name = aws_cloudwatch_log_group.lambda[each.key].name
 
   event_source_arn                       = aws_sqs_queue.source[each.key].arn

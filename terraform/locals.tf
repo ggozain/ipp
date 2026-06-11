@@ -26,7 +26,6 @@ locals {
       timeout                 = contains(keys(function), "timeout") ? function.timeout : 30
       reserved_concurrency    = contains(keys(function), "reserved_concurrency") ? function.reserved_concurrency : null
       environment_variables   = contains(keys(function), "environment_variables") ? function.environment_variables : {}
-      vpc_name                = contains(keys(function), "vpc_name") ? function.vpc_name : null
 
       sqs_visibility_timeout_seconds = contains(keys(function), "sqs_visibility_timeout_seconds") ? (
         function.sqs_visibility_timeout_seconds

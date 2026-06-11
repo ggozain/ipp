@@ -70,15 +70,6 @@ variable "image_working_directory" {
   default     = null
 }
 
-variable "vpc_config" {
-  type = object({
-    subnet_ids         = list(string)
-    security_group_ids = list(string)
-  })
-  description = "VPC attachment for the function. `null` leaves the function unattached (default Lambda networking with internet egress via the AWS-managed path)."
-  default     = null
-}
-
 variable "log_group_name" {
   type        = string
   description = "Name of the CloudWatch log group the function writes to. Created outside this module so retention is enforced from invocation #1."
