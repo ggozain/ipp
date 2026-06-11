@@ -5,7 +5,7 @@ Reusable Terraform module for an SQS-triggered container Lambda function.
 ## What it creates per function
 
 - AWS Lambda function in `Image` package mode pointing at an ECR image you already pushed.
-- SQS source queue + SQS DLQ, both KMS-encrypted, redrive policy wired.
+- SQS source queue + SQS DLQ, both encrypted at rest (SSE-SQS), redrive policy wired.
 - Lambda event source mapping (SQS -> Lambda) with `ReportBatchItemFailures` partial-batch handling.
 - IAM execution role with `AWSLambdaBasicExecutionRole`, SQS consume policy, plus any extra policy ARNs or inline statements you pass.
 - CloudWatch log group pre-created with retention (so retention applies from the first invocation).
@@ -27,10 +27,9 @@ Logging (this is what the ERROR alarm depends on):
 - **The function logs to stdout/stderr.** CloudWatch only captures what the runtime writes to stdout/stderr. The "log file" described in the brief must be redirected to stdout inside the container; if the image writes to a file on the ephemeral filesystem, the log group stays empty and none of the log-based alarming fires.
 - **Log lines match the documented level format.** The ERROR alarm keys off the substring `" : ERROR : "` (the level field of `2026-05-11 15:09:09,394 : ERROR : ...`). If the application changes its log format, override `alarm_error_log_pattern` to match, or the alarm goes silent without erroring.
 
-Alarms and encryption:
+Alarms:
 
 - **The SNS topic exists and accepts CloudWatch.** When `alarm_sns_topic_arn` is set, the topic must already exist and its access policy must allow `cloudwatch.amazonaws.com` to publish. The module wires the action but does not create the topic or its policy.
-- **A custom KMS key must permit both the role and SQS.** If you pass a CMK via `sqs_kms_master_key_id`, the IAM side is handled (the execution role gets `kms:Decrypt`/`kms:GenerateDataKey`), but the key's own policy must also allow that role and the `sqs.amazonaws.com` service principal. KMS requires both the IAM grant and the key policy.
 
 ## Usage
 
@@ -82,7 +81,6 @@ See `examples/minimal/` for the smallest possible call and `examples/with-alarms
 | `sqs_batch_size` | no | `10` | Lambda event source mapping batch size. Up to 10 for standard queues. |
 | `sqs_maximum_batching_window_in_seconds` | no | `0` | Set to batch under low load. |
 | `sqs_scaling_config_maximum_concurrency` | no | `null` | Per-event-source max Lambda concurrency (2-1000). |
-| `sqs_kms_master_key_id` | no | `alias/aws/sqs` | AWS-managed by default. Pass a CMK ARN to use your own; the execution role gets `kms:Decrypt`/`kms:GenerateDataKey` on it. |
 | `dlq_message_retention_seconds` | no | `1209600` (14d) | DLQ retention - keep this high so you have time to investigate. |
 | `cloudwatch_retention_in_days` | no | `30` | Log group retention. |
 | `cloudwatch_skip_destroy` | no | `false` | Keep the log group on destroy. |
@@ -100,7 +98,7 @@ See `examples/minimal/` for the smallest possible call and `examples/with-alarms
 ## Production notes
 
 - **Visibility timeout x6 the function timeout.** AWS recommends >= 6x because the SQS poller can hold a message for retries while the function is still running.
-- **KMS encrypted queues by default** using the AWS-managed key. Pass a CMK via `sqs_kms_master_key_id` for stricter compliance.
+- **Queues are encrypted at rest with SSE-SQS** (the SQS-owned key), applied automatically by AWS with no key to manage. Custom CMKs are out of scope for this module.
 - **ARM64 by default.** Cheaper and faster per memory tier; only override for images that need x86.
 - **No VPC attachment.** Default Lambda networking already gives outbound internet via the AWS-managed path, which is all the brief needs. Reaching private resources or egressing from a fixed NAT IP is out of scope.
 - **No function-level DLQ.** SQS-triggered Lambdas are polled, not invoked asynchronously, so the canonical failure path is the SQS redrive DLQ. A function-level DLQ here would never receive messages.
