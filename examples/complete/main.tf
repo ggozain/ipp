@@ -1,7 +1,6 @@
 module "ipp" {
   source = "github.com/ggozain/ipp?ref=v1.0.0"
 
-  aws_region         = "eu-central-1"
   service_short_code = "ipp"
   tag_environment    = "prod"
   tag_cost_center    = "trading"

@@ -1,10 +1,4 @@
 # global
-variable "aws_region" {
-  type        = string
-  description = "The AWS region the consuming provider is configured for. Used in IAM ARN construction; not used to configure a provider inside the module."
-  default     = null
-}
-
 variable "service_short_code" {
   type        = string
   description = "Short code used as a prefix for resource names and an IAM path segment (eg `ipp` produces `aws-ipp-<function>-execution-role`)."

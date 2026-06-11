@@ -18,7 +18,7 @@ This module provisions the Lambda and its immediate dependencies only. It assume
 General:
 
 - **The ECR image already exists and is pullable.** `image_uri` must point at an image pushed to ECR in this account and region. The module neither builds nor pushes, and adds no cross-account ECR repository policy, so cross-account pulls need that arranged separately.
-- **One region, caller-owned provider.** Every resource lands in `aws_region`. The caller configures the `aws` provider, credentials and state backend.
+- **One region, caller-owned provider.** Every resource lands in the region of the `aws` provider passed in by the caller, who also owns credentials and the state backend. The module reads the active region from `data.aws_region` rather than taking it as an input.
 - **Standard SQS queues, not FIFO.** Queue names carry no `.fifo` suffix and `sqs_batch_size` assumes the standard-queue ceiling of 10. FIFO is out of scope.
 - **No VPC attachment.** The function uses default Lambda networking, which provides outbound internet egress via the AWS-managed path - exactly what the brief needs. Reaching private (in-VPC) resources or egressing from a fixed allowlistable IP is out of scope; that would require VPC attachment, a NAT gateway and subnet wiring this module deliberately does not manage.
 
@@ -37,7 +37,6 @@ Alarms:
 module "lambda_sqs" {
   source = "github.com/ggozain/ipp?ref=v1.0.0"
 
-  aws_region         = "eu-central-1"
   service_short_code = "ipp"
   tag_environment    = "prod"
   tag_cost_center    = "trading"

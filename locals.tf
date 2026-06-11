@@ -1,8 +1,11 @@
 # global
 locals {
-  repo_default_tags = {
-    CostCenter = lower(var.tag_cost_center)
-  }
+  repo_default_tags = merge(
+    {
+      CostCenter = lower(var.tag_cost_center)
+    },
+    var.tag_environment != null ? { Environment = lower(var.tag_environment) } : {},
+  )
   current_account_id = data.aws_caller_identity.current.account_id
   current_region     = data.aws_region.current.region
   current_partition  = data.aws_partition.current.partition
