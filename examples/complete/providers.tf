@@ -1,9 +1,9 @@
 provider "aws" {
-  region = var.aws_region
+  region = "eu-central-1"
 
   default_tags {
     tags = {
-      Environment = lower(var.tag_environment)
+      Environment = "prod"
       ManagedBy   = "terraform"
       Repo        = "ipp"
     }

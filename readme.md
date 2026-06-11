@@ -35,7 +35,7 @@ Alarms:
 
 ```hcl
 module "lambda_sqs" {
-  source = "github.com/<owner>/ipp//terraform"
+  source = "github.com/ggozain/ipp?ref=v1.0.0"
 
   aws_region         = "eu-central-1"
   service_short_code = "ipp"
@@ -59,7 +59,7 @@ module "lambda_sqs" {
 }
 ```
 
-See `examples/minimal/` for the smallest possible call and `examples/with-alarms/` for a function wired to an SNS alarm topic with extra IAM.
+See `examples/minimal/` for the smallest possible call and `examples/complete/` for functions wired to an SNS alarm topic with extra IAM, custom sizing and a concurrency cap.
 
 ## Per-function inputs
 
