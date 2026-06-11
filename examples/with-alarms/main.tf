@@ -1,5 +1,5 @@
 module "ipp" {
-  source = "../.."
+  source = "github.com/ggozain/ipp?ref=v1.0.0"
 
   aws_region         = var.aws_region
   service_short_code = "ipp"
