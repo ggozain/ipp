@@ -74,3 +74,13 @@ locals {
     }
   }
 }
+
+locals {
+  # alarm_actions / ok_actions are wired only when the consumer supplies an SNS topic.
+  # Pre-computed per function so each alarm reads the same value without repeating the ternary.
+  alarm_actions = {
+    for function in local.lambda_functions : "${local.current_region}.${function.name}" => (
+      function.alarm_sns_topic_arn != null ? [function.alarm_sns_topic_arn] : []
+    )
+  }
+}
