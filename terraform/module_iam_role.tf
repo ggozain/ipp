@@ -20,7 +20,7 @@ module "iam_role_lambda_execution" {
       "arn:${local.current_partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
       module.iam_policy_lambda_execution[each.key].arn,
     ],
-    each.value.vpc_config != null ? [
+    each.value.vpc_name != null ? [
       "arn:${local.current_partition}:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole",
     ] : [],
     each.value.iam_additional_policy_arns,

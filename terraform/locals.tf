@@ -6,11 +6,14 @@ locals {
   current_account_id = data.aws_caller_identity.current.account_id
   current_region     = data.aws_region.current.region
   current_partition  = data.aws_partition.current.partition
+
+  # Namespace for the custom metrics derived from log metric filters.
+  cloudwatch_metric_namespace = "${var.service_short_code}/lambda"
 }
 
-# lambda functions: flatten + defaults
+# lambda functions: defaults
 locals {
-  lambda_functions = flatten([
+  lambda_functions = [
     for function_key, function in var.lambda_functions : {
       function_key            = function_key
       name                    = function.name
@@ -23,7 +26,7 @@ locals {
       timeout                 = contains(keys(function), "timeout") ? function.timeout : 30
       reserved_concurrency    = contains(keys(function), "reserved_concurrency") ? function.reserved_concurrency : null
       environment_variables   = contains(keys(function), "environment_variables") ? function.environment_variables : {}
-      vpc_config              = contains(keys(function), "vpc_config") ? function.vpc_config : null
+      vpc_name                = contains(keys(function), "vpc_name") ? function.vpc_name : null
 
       sqs_visibility_timeout_seconds = contains(keys(function), "sqs_visibility_timeout_seconds") ? (
         function.sqs_visibility_timeout_seconds
@@ -42,12 +45,23 @@ locals {
       cloudwatch_retention_in_days = contains(keys(function), "cloudwatch_retention_in_days") ? function.cloudwatch_retention_in_days : 30
       cloudwatch_skip_destroy      = contains(keys(function), "cloudwatch_skip_destroy") ? function.cloudwatch_skip_destroy : false
 
+      # Observability: an ERROR-line metric filter plus alarms on log errors, Lambda
+      # invocation errors and DLQ depth. alarm_sns_topic_arn wires alarm/ok actions only
+      # when supplied; alarms are still created (and visible) without it.
+      alarm_sns_topic_arn           = contains(keys(function), "alarm_sns_topic_arn") ? function.alarm_sns_topic_arn : null
+      alarm_error_log_pattern       = contains(keys(function), "alarm_error_log_pattern") ? function.alarm_error_log_pattern : " : ERROR : "
+      alarm_error_log_threshold     = contains(keys(function), "alarm_error_log_threshold") ? function.alarm_error_log_threshold : 1
+      alarm_lambda_errors_threshold = contains(keys(function), "alarm_lambda_errors_threshold") ? function.alarm_lambda_errors_threshold : 1
+      alarm_dlq_messages_threshold  = contains(keys(function), "alarm_dlq_messages_threshold") ? function.alarm_dlq_messages_threshold : 1
+      alarm_period_seconds          = contains(keys(function), "alarm_period_seconds") ? function.alarm_period_seconds : 300
+      alarm_evaluation_periods      = contains(keys(function), "alarm_evaluation_periods") ? function.alarm_evaluation_periods : 1
+
       iam_additional_policy_arns       = contains(keys(function), "iam_additional_policy_arns") ? function.iam_additional_policy_arns : []
       iam_additional_policy_statements = contains(keys(function), "iam_additional_policy_statements") ? function.iam_additional_policy_statements : []
 
       tags = contains(keys(function), "tags") ? function.tags : {}
     }
-  ])
+  ]
 }
 
 # pre-computed ARNs so the policy document can reference the source queue and DLQ

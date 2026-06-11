@@ -20,6 +20,10 @@ output "lambda_functions" {
 
       log_group_name = aws_cloudwatch_log_group.lambda["${local.current_region}.${function.name}"].name
       log_group_arn  = aws_cloudwatch_log_group.lambda["${local.current_region}.${function.name}"].arn
+
+      log_errors_alarm_arn    = aws_cloudwatch_metric_alarm.log_errors["${local.current_region}.${function.name}"].arn
+      lambda_errors_alarm_arn = aws_cloudwatch_metric_alarm.lambda_errors["${local.current_region}.${function.name}"].arn
+      dlq_messages_alarm_arn  = aws_cloudwatch_metric_alarm.dlq_messages["${local.current_region}.${function.name}"].arn
     }
   }
 }

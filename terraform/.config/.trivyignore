@@ -1,2 +1,0 @@
-# Add CVE / misconfig IDs here with a justification, eg:
-# AVD-AWS-0017  # cloudwatch log group encrypted with aws-managed key, acceptable for non-sensitive logs

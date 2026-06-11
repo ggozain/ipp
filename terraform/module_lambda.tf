@@ -21,12 +21,9 @@ module "lambda_function" {
   reserved_concurrent_executions = each.value.reserved_concurrency != null ? each.value.reserved_concurrency : -1
   environment_variables          = each.value.environment_variables
 
-  vpc_config = each.value.vpc_config != null ? {
-    subnet_ids = each.value.vpc_config.subnet_ids
-    security_group_ids = concat(
-      each.value.vpc_config.security_group_ids,
-      [module.security_group_egress_https[each.key].security_group_id],
-    )
+  vpc_config = each.value.vpc_name != null ? {
+    subnet_ids         = data.aws_subnets.private["${local.current_region}.${each.value.name}"].ids
+    security_group_ids = [module.security_group_egress_https[each.key].security_group_id]
   } : null
 
   log_group_name = aws_cloudwatch_log_group.lambda[each.key].name
