@@ -7,7 +7,6 @@ resource "aws_sqs_queue" "dlq" {
 
   name                      = "aws-${var.service_short_code}-${each.value.name}-dlq"
   message_retention_seconds = each.value.dlq_message_retention_seconds
-  kms_master_key_id         = each.value.sqs_kms_master_key_id
 
   tags = merge(local.repo_default_tags, each.value.tags)
 }
@@ -22,7 +21,6 @@ resource "aws_sqs_queue" "source" {
   name                       = "aws-${var.service_short_code}-${each.value.name}"
   message_retention_seconds  = each.value.sqs_message_retention_seconds
   visibility_timeout_seconds = each.value.sqs_visibility_timeout_seconds
-  kms_master_key_id          = each.value.sqs_kms_master_key_id
 
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.dlq[each.key].arn

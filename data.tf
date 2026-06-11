@@ -7,7 +7,7 @@ data "aws_region" "current" {}
 # Execution role policy: SQS consume on source queue.
 # DLQ redrive is performed by SQS itself (driven by the redrive policy on the source queue),
 # not by the Lambda execution role, so no SendMessage statement is needed here.
-# `kms:Decrypt` is added only when the consumer overrides the default AWS-managed key.
+# Queues use SSE-SQS (an SQS-owned key), so no kms:Decrypt grant is required.
 data "aws_iam_policy_document" "lambda_execution" {
 
   for_each = {
@@ -28,24 +28,5 @@ data "aws_iam_policy_document" "lambda_execution" {
     resources = [
       local.function_arns[each.key].source_queue_arn,
     ]
-  }
-
-  dynamic "statement" {
-
-    for_each = each.value.sqs_kms_master_key_id != "alias/aws/sqs" ? [each.value.sqs_kms_master_key_id] : []
-
-    content {
-      sid    = "KMSDecryptForSQS"
-      effect = "Allow"
-      actions = [
-        "kms:Decrypt",
-        "kms:GenerateDataKey",
-      ]
-      resources = [
-        # Accept either an alias or a full key ARN. If consumers pass a bare key id, they should
-        # supply a full ARN instead; constraining to ARN/alias keeps the policy auditable.
-        statement.value,
-      ]
-    }
   }
 }

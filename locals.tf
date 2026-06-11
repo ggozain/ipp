@@ -37,7 +37,6 @@ locals {
       sqs_batch_size                         = contains(keys(function), "sqs_batch_size") ? function.sqs_batch_size : 10
       sqs_maximum_batching_window_in_seconds = contains(keys(function), "sqs_maximum_batching_window_in_seconds") ? function.sqs_maximum_batching_window_in_seconds : 0
       sqs_scaling_config_maximum_concurrency = contains(keys(function), "sqs_scaling_config_maximum_concurrency") ? function.sqs_scaling_config_maximum_concurrency : null
-      sqs_kms_master_key_id                  = contains(keys(function), "sqs_kms_master_key_id") ? function.sqs_kms_master_key_id : "alias/aws/sqs"
 
       dlq_message_retention_seconds = contains(keys(function), "dlq_message_retention_seconds") ? function.dlq_message_retention_seconds : 1209600
 
